@@ -273,7 +273,7 @@ public class MainPaneController extends Stage  implements Initializable{
 		CustomDialogController dialog = new CustomDialogController(i18nBundle.getString("app.dialog.file_exist_confirm.title"),
 				i18nBundle.getString("app.dialog.file_exist_confirm.header_text"), 
 				i18nBundle.getString("app.dialog.file_exist_confirm.content_text"), 
-				mainApp.getPrimaryStage());
+				this);
 		dialog.showAndWait();
 		isProceed = dialog.getResult().equals(DialogResult.OK);
 		return isProceed;
@@ -313,7 +313,8 @@ public class MainPaneController extends Stage  implements Initializable{
 	@FXML
     void onAbout(ActionEvent event) {
 		Stage dialog = new Stage();
-		dialog.initStyle(StageStyle.UTILITY);
+		dialog.initModality(Modality.WINDOW_MODAL);
+		dialog.initOwner(this);
 		dialog.setTitle(i18nBundle.getString("app.dialog.about.title"));
 		Text content = new Text(i18nBundle.getString("app.dialog.about.content_text"));
 		double margin = 25;
