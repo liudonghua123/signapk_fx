@@ -22,6 +22,7 @@ public class MainApp extends Application {
 	private String resourceBaseName = "ApplicationResources";
 	Map<String, String> themes;
 	Map<String, Locale> locales;
+	Map<String, CertInfo> certs;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -37,6 +38,37 @@ public class MainApp extends Application {
 		i18nBundle = loadResourceBundle(new File(rootPath, "resources/locales").getAbsolutePath(), locale);
 		setupLocales(rootPath);
 		setupThemes(rootPath);
+		setupCerts(rootPath);
+	}
+
+	private void setupCerts(String rootPath) {
+		certs = new TreeMap<>();
+		File certDir = new File(rootPath, "resources/certs/");
+		FileFilter fileFilter = new FileFilter() {
+			@Override
+			public boolean accept(File file) {
+				String fileName = file.getName();
+				if(fileName.length() == 0 || fileName.lastIndexOf(".") == -1) {
+					return false;
+				}
+				String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
+				String correspondCertFilePath = file.getParent() + File.separator  + getFileNameExcludeExtension(file) + ".x509.pem";
+				if(fileName.length() > 0 && fileExtension.toLowerCase().equals("pk8") && new File(correspondCertFilePath).exists()) {
+					return true;
+				}
+				return false;
+			}
+		};
+		for(File resourceFile : certDir.listFiles(fileFilter)) {
+			CertInfo certInfo = parseCertInfo(resourceFile);
+			certs.put(certInfo.getId(), certInfo);
+		}
+	}
+
+	private CertInfo parseCertInfo(File resourceFile) {
+		String certInfoId = getFileNameExcludeExtension(resourceFile);
+		String publicKeyFilePath = resourceFile.getParent() + File.separator  + getFileNameExcludeExtension(resourceFile) + ".x509.pem";
+		return new CertInfo(certInfoId, publicKeyFilePath, resourceFile.getPath());
 	}
 
 	private void setupLocales(String rootPath) {
@@ -168,6 +200,16 @@ public class MainApp extends Application {
 	public void setTheme(String theme) {
 		Preferences prefs = Preferences.userNodeForPackage(MainApp.class);
 	    prefs.put("theme", theme);
+	}
+	
+	public String getCert() {
+		Preferences prefs = Preferences.userNodeForPackage(MainApp.class);
+	    return prefs.get("cert", "testkey");
+	}
+	
+	public void setCert(String cert) {
+		Preferences prefs = Preferences.userNodeForPackage(MainApp.class);
+	    prefs.put("cert", cert);
 	}
 
 	private String getRootDirectory() {

@@ -63,17 +63,13 @@ public class MainPaneController extends Stage  implements Initializable{
     @FXML
     private ToggleGroup languageRadioMenuItemGroup;
     @FXML
-    private RadioMenuItem languageEnglishRadioMenuItem;
-    @FXML
-    private RadioMenuItem languageChinaRadioMenuItem;
-    @FXML
     private Menu themeMenu;
     @FXML
     private ToggleGroup themeRadioMenuItemGroup;
     @FXML
-    private RadioMenuItem themeDefaultRadioMenuItem;
+    private Menu certMenu;
     @FXML
-    private RadioMenuItem themeBlackRadioMenuItem;
+    private ToggleGroup certRadioMenuItemGroup;
     
     private Scene scene;
     
@@ -84,6 +80,7 @@ public class MainPaneController extends Stage  implements Initializable{
 	private String outputDirPath;
 	private String[] STATUS_LABEL_TEXT;
 	private String[] SUPPORT_FILE_EXTENSION = {"apk", "jar", "zip"};
+	private CertInfo certInfo;
 
     public MainPaneController(MainApp mainApp) {
     	this.mainApp = mainApp;
@@ -114,6 +111,7 @@ public class MainPaneController extends Stage  implements Initializable{
 				i18nBundle.getString("app.status.sign_failed"),
 				i18nBundle.getString("app.status.file_not_supported"),
 		};
+		certInfo = mainApp.certs.get(mainApp.getCert());
 		updateBottomStatus(STATUS.READY);
 	}
 
@@ -140,6 +138,19 @@ public class MainPaneController extends Stage  implements Initializable{
 			themeMenuItem.setToggleGroup(themeRadioMenuItemGroup);
 			themeMenu.getItems().add(themeMenuItem);
 			themeMenuItem.setOnAction(event -> onChangeTheme(event));
+		}
+		
+		certMenu.getItems().clear();
+		String certInPref = mainApp.getCert();
+		for(Entry<String, CertInfo> certEntry : mainApp.certs.entrySet()) {
+			RadioMenuItem certMenuItem = new RadioMenuItem(certEntry.getKey());
+			if(certEntry.getKey().equals(certInPref)) {
+				certMenuItem.setSelected(true);
+				certInfo = certEntry.getValue();
+			}
+			certMenuItem.setToggleGroup(certRadioMenuItemGroup);
+			certMenu.getItems().add(certMenuItem);
+			certMenuItem.setOnAction(event -> onChangeCert(event));
 		}
 	}
 
@@ -256,7 +267,7 @@ public class MainPaneController extends Stage  implements Initializable{
 		}
 		updateBottomStatus(STATUS.SIGNING);
     	new Thread(() -> {
-    		boolean isSuccess = SignApk.signApk(false, "resources/testkey.x509.pem", "resources/testkey.pk8", inputFilePath, outputFilePath);
+    		boolean isSuccess = SignApk.signApk(false, certInfo.getPublicKeyFilePath(), certInfo.getPrivateKeyFilePath(), inputFilePath, outputFilePath);
     		Platform.runLater(() -> {
     			if(isSuccess) {
     	    		updateBottomStatus(STATUS.SIGN_SUCCESS);
@@ -301,6 +312,13 @@ public class MainPaneController extends Stage  implements Initializable{
     		updateLanguage(localeSelected);
     	}
     	
+    }
+
+    @FXML
+    void onChangeCert(ActionEvent event) {
+    	RadioMenuItem item = (RadioMenuItem) event.getSource();
+    	certInfo = mainApp.certs.get(item.getText());
+    	mainApp.setCert(item.getText());
     }
 
     private void updateLanguage(Locale locale) {

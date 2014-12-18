@@ -17,6 +17,15 @@
           </Menu>
           <Menu mnemonicParsing="false" text="%app.menu.setting">
                <items>
+                  <Menu fx:id="certMenu" mnemonicParsing="false" text="%app.menu.setting.certs">
+                     <items>
+                        <RadioMenuItem mnemonicParsing="false" text="%app.menu.setting.certs.test">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="certRadioMenuItemGroup" />
+                           </toggleGroup>
+                        </RadioMenuItem>
+                     </items>
+                  </Menu>
                   <Menu fx:id="themeMenu" mnemonicParsing="false" text="%app.menu.setting.theme">
                      <items>
                         <RadioMenuItem fx:id="themeDefaultRadioMenuItem" mnemonicParsing="false" onAction="#onChangeTheme" selected="true" text="%app.menu.setting.theme.default">
