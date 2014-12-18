@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+    <Product Id="9f5ec5d1-d1ae-420e-87d2-ff562c31efe5" Name="signapk_fx" 
+             Language="1033" Version="1.0"
+             Manufacturer="Liu.D.H" 
+             UpgradeCode="3a8613a1-0b75-45c7-8f3b-e7ec5dc2c97d">
+        <Package Description="signapk_fx" Comments="None"
+                 InstallerVersion="200" Compressed="yes"
+                 InstallScope="perMachine" Platform="x64"/>
+        <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
+
+        <!-- We use RemoveFolderEx to ensure application folder is fully 
+             removed on uninstall. Including files created outside of MSI
+             after application had been installed (e.g. on AU or user state).
+             
+             Hovewer, RemoveFolderEx is only available in WiX 3.6, 
+             we will comment it out if we running older WiX.
+
+             RemoveFolderEx requires that we "remember" the path for uninstall.
+             Read the path value and set the APPLICATIONFOLDER property with the value.
+        -->
+        <Property Id="APPLICATIONFOLDER">
+            <RegistrySearch Key="SOFTWARE\Liu.D.H\signapk_fx" 
+                            Root="HKLM" Type="raw" 
+                            Id="APPLICATIONFOLDER_REGSEARCH" Name="Path" />
+        </Property>
+        <DirectoryRef Id="APPLICATIONFOLDER">
+            <Component Id="CleanupMainApplicationFolder" Guid="*" Win64="yes">
+                <RegistryValue Root="HKLM"
+                                   Key="SOFTWARE\Liu.D.H\signapk_fx"
+                                   Name="Path" Type="string" Value="[APPLICATIONFOLDER]"
+                                   KeyPath="yes" />
+                <!-- We need to use APPLICATIONFOLDER variable here or RemoveFolderEx
+                     will not remove on "install". But only if WiX 3.6 is used. -->
+                <!--     
+                  <util:RemoveFolderEx On="uninstall" Property="APPLICATIONFOLDER" />
+                -->
+            </Component>
+        </DirectoryRef>        
+        <?include bundle.wxi ?>
+        <UI/>
+        <Icon Id="DesktopIcon.exe" SourceFile="signapk_fx.ico" />
+        <Icon Id="StartMenuIcon.exe" SourceFile="signapk_fx.ico" />
+    </Product>
+</Wix>
