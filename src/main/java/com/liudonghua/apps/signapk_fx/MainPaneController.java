@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -21,6 +22,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextField;
@@ -56,11 +58,15 @@ public class MainPaneController extends Stage  implements Initializable{
     @FXML
     private TextField InputFileTextField;
     @FXML
+    private Menu languageMenu;
+    @FXML
     private ToggleGroup languageRadioMenuItemGroup;
     @FXML
     private RadioMenuItem languageEnglishRadioMenuItem;
     @FXML
     private RadioMenuItem languageChinaRadioMenuItem;
+    @FXML
+    private Menu themeMenu;
     @FXML
     private ToggleGroup themeRadioMenuItemGroup;
     @FXML
@@ -111,19 +117,28 @@ public class MainPaneController extends Stage  implements Initializable{
 	}
 
 	public void initialize(URL location, ResourceBundle resources) {
-		// update language menu item
-		if(mainApp.getCurrentInUseLocale().equals(Locale.CHINA)) {
-			languageChinaRadioMenuItem.setSelected(true);
+		languageMenu.getItems().clear();
+		Locale localInPref = mainApp.getLocale();
+		for(Entry<String, Locale> localeEntry : mainApp.locales.entrySet()) {
+			RadioMenuItem languageMenuItem = new RadioMenuItem(localeEntry.getKey());
+			if(localeEntry.getValue().equals(localInPref)) {
+				languageMenuItem.setSelected(true);
+			}
+			languageMenuItem.setToggleGroup(languageRadioMenuItemGroup);
+			languageMenu.getItems().add(languageMenuItem);
+			languageMenuItem.setOnAction(event -> onChangeLanguage(event));
 		}
-		else {
-			languageEnglishRadioMenuItem.setSelected(true);
-		}
-		// update theme menu item
-		if(mainApp.getTheme().equals(mainApp.themeBlack)) {
-			themeBlackRadioMenuItem.setSelected(true);
-		}
-		else {
-			themeDefaultRadioMenuItem.setSelected(true);
+		
+		themeMenu.getItems().clear();
+		String themeInPref = mainApp.getTheme();
+		for(Entry<String, String> themeEntry : mainApp.themes.entrySet()) {
+			RadioMenuItem themeMenuItem = new RadioMenuItem(themeEntry.getKey());
+			if(themeEntry.getValue().equals(themeInPref)) {
+				themeMenuItem.setSelected(true);
+			}
+			themeMenuItem.setToggleGroup(themeRadioMenuItemGroup);
+			themeMenu.getItems().add(themeMenuItem);
+			themeMenuItem.setOnAction(event -> onChangeTheme(event));
 		}
 	}
 
@@ -272,35 +287,18 @@ public class MainPaneController extends Stage  implements Initializable{
     @FXML
     void onChangeTheme(ActionEvent event) {
     	RadioMenuItem item = (RadioMenuItem) event.getSource();
-    	ToggleGroup toggleGroup = item.getToggleGroup();
-    	int index = toggleGroup.getToggles().indexOf(toggleGroup.getSelectedToggle());
-    	// default theme
-    	if(index == 0) {
-            scene.getStylesheets().remove(mainApp.themeBlack);
-            if(!scene.getStylesheets().contains(mainApp.themeDefault)) scene.getStylesheets().add(mainApp.themeDefault);
-            mainApp.setTheme(mainApp.themeDefault);
-    	}
-    	// black theme
-    	else if(index == 1) {
-            scene.getStylesheets().remove(mainApp.themeDefault);
-            if(!scene.getStylesheets().contains(mainApp.themeBlack)) scene.getStylesheets().add(mainApp.themeBlack);
-            mainApp.setTheme(mainApp.themeBlack);
-    	}
+        String themeSelected = mainApp.themes.get(item.getText());
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(themeSelected);
+        mainApp.setTheme(themeSelected);
     }
 
     @FXML
     void onChangeLanguage(ActionEvent event) {
     	RadioMenuItem item = (RadioMenuItem) event.getSource();
-    	ToggleGroup toggleGroup = item.getToggleGroup();
-    	int index = toggleGroup.getToggles().indexOf(toggleGroup.getSelectedToggle());
-    	Locale locale = Locale.US;
-    	// zh_CN
-    	if(index == 1) {
-    		locale = Locale.CHINA;
-    	}
-    	
-    	if(!mainApp.getCurrentInUseLocale().equals(locale)) {
-    		updateLanguage(locale);
+    	Locale localeSelected = mainApp.locales.get(item.getText());
+    	if(!mainApp.getCurrentInUseLocale().equals(localeSelected)) {
+    		updateLanguage(localeSelected);
     	}
     	
     }

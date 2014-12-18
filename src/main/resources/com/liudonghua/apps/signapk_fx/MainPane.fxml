@@ -17,7 +17,7 @@
           </Menu>
           <Menu mnemonicParsing="false" text="%app.menu.setting">
                <items>
-                  <Menu mnemonicParsing="false" text="%app.menu.setting.theme">
+                  <Menu fx:id="themeMenu" mnemonicParsing="false" text="%app.menu.setting.theme">
                      <items>
                         <RadioMenuItem fx:id="themeDefaultRadioMenuItem" mnemonicParsing="false" onAction="#onChangeTheme" selected="true" text="%app.menu.setting.theme.default">
                            <toggleGroup>
@@ -26,7 +26,7 @@
                         <RadioMenuItem fx:id="themeBlackRadioMenuItem" mnemonicParsing="false" onAction="#onChangeTheme" text="%app.menu.setting.theme.black" toggleGroup="$themeRadioMenuItemGroup" />
                      </items>
                   </Menu>
-                  <Menu mnemonicParsing="false" text="%app.menu.setting.language">
+                  <Menu fx:id="languageMenu" mnemonicParsing="false" text="%app.menu.setting.language">
                      <items>
                         <RadioMenuItem fx:id="languageEnglishRadioMenuItem" mnemonicParsing="false" onAction="#onChangeLanguage" selected="true" text="%app.menu.setting.language.en_US">
                            <toggleGroup>

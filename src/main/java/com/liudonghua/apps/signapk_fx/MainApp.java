@@ -1,11 +1,14 @@
 package com.liudonghua.apps.signapk_fx;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
 import javafx.application.Application;
@@ -16,9 +19,9 @@ public class MainApp extends Application {
 	private Locale locale;
 	private ResourceBundle i18nBundle;
 	private Stage primaryStage;
-	
-    String themeDefault;
-    String themeBlack;
+	private String resourceBaseName = "ApplicationResources";
+	Map<String, String> themes;
+	Map<String, Locale> locales;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -32,9 +35,77 @@ public class MainApp extends Application {
 		setCurrentDirectory(rootPath);
 		locale = getLocale();
 		i18nBundle = loadResourceBundle(new File(rootPath, "resources/locales").getAbsolutePath(), locale);
+		setupLocales(rootPath);
+		setupThemes(rootPath);
+	}
+
+	private void setupLocales(String rootPath) {
+		locales = new TreeMap<>();
+		File themeDir = new File(rootPath, "resources/locales/");
+		FileFilter fileFilter = new FileFilter() {
+			@Override
+			public boolean accept(File file) {
+				String fileName = file.getName();
+				if(fileName.length() == 0 || fileName.lastIndexOf(".") == -1) {
+					return false;
+				}
+				String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
+				if(fileName.length() > 0 && fileName.startsWith(resourceBaseName) && fileExtension.toLowerCase().equals("properties")) {
+					return true;
+				}
+				return false;
+			}
+		};
+		for(File resourceFile : themeDir.listFiles(fileFilter)) {
+			Locale locale = parseResourceLocale(resourceFile);
+			locales.put(locale.toString(), locale);
+		}
+	}
+
+	private Locale parseResourceLocale(File resourceFile) {
+		String fileName = resourceFile.getName();
+		// default resource (en_US)
+		if (fileName.equals(resourceBaseName + ".properties")) {
+			return Locale.US;
+		} else {
+			int lastDotPosition = fileName.lastIndexOf(".");
+			int startLocalePostfix = resourceBaseName.length() + 1;
+			String localePostfixString = fileName.substring(startLocalePostfix,
+					lastDotPosition);
+			String[] localePostfix = localePostfixString.split("_");
+			if (localePostfix.length == 1) {
+				return new Locale(localePostfix[0]);
+			} else if (localePostfix.length == 2) {
+				return new Locale(localePostfix[0], localePostfix[1]);
+			} else if (localePostfix.length == 3) {
+				return new Locale(localePostfix[0], localePostfix[1], localePostfix[2]);
+			} else {
+				return null;
+			}
+		}
+	}
+
+	private void setupThemes(String rootPath) {
+		themes = new TreeMap<>();
+		File themeDir = new File(rootPath, "resources/theme/");
+		FileFilter fileFilter = new FileFilter() {
+			@Override
+			public boolean accept(File file) {
+				String fileName = file.getName();
+				if(fileName.length() == 0 || fileName.lastIndexOf(".") == -1) {
+					return false;
+				}
+				String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
+				if(fileName.length() > 0 && fileExtension.toLowerCase().equals("css")) {
+					return true;
+				}
+				return false;
+			}
+		};
 	    try {
-			themeDefault = new File(rootPath, "resources/theme/default.css").toURL().toExternalForm();
-		    themeBlack = new File(rootPath, "resources/theme/black.css").toURL().toExternalForm();
+			for(File themeFile : themeDir.listFiles(fileFilter)) {
+				themes.put(getFileNameExcludeExtension(themeFile), themeFile.toURL().toExternalForm());
+			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -89,7 +160,7 @@ public class MainApp extends Application {
 		Preferences prefs = Preferences.userNodeForPackage(MainApp.class);
 	    String theme = prefs.get("theme", null);
 	    if(theme == null) {
-	    	theme = themeDefault;
+	    	theme = themes.get("default");
 	    }
 	    return theme;
 	}
@@ -126,7 +197,27 @@ public class MainApp extends Application {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
-		return ResourceBundle.getBundle("ApplicationResources", locale, loader);
+		return ResourceBundle.getBundle(resourceBaseName, locale, loader);
+	}
+	
+	private String getFileNameExtension(File file) {
+		String fileName = file.getName();
+		if(fileName.length() == 0 || fileName.lastIndexOf(".") == -1) {
+			return null;
+		}
+		return fileName.substring(fileName.lastIndexOf(".") + 1);
+	}
+	
+	private String getFileNameExcludeExtension(File file) {
+		String fileName = file.getName();
+		if(fileName.length() == 0) {
+			return null;
+		}
+		int lastDotPosition = fileName.lastIndexOf(".");
+		if(lastDotPosition == -1) {
+			return fileName;
+		}
+		return fileName.substring(0, fileName.lastIndexOf("."));
 	}
 	
 }
