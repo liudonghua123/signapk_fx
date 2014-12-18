@@ -69,6 +69,7 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
                   <Label text="%app.main.select_file_label" GridPane.valignment="CENTER" />
@@ -85,11 +86,12 @@
                      </GridPane.margin>
                   </Button>
                   <CheckBox fx:id="customOutputDirCheckBox" mnemonicParsing="false" onAction="#onCustomOutputDirChecked" text="%app.main.select_output_dir_checkbox_text" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
-                  <Button fx:id="signApkButton" disable="true" mnemonicParsing="false" onAction="#onSignFileClicked" text="%app.main.sign_button_text" GridPane.rowIndex="4">
+                  <Button fx:id="signApkButton" disable="true" mnemonicParsing="false" onAction="#onSignFileClicked" text="%app.main.sign_button_text" GridPane.rowIndex="5">
                      <GridPane.margin>
                         <Insets top="20.0" />
                      </GridPane.margin>
                   </Button>
+                  <CheckBox fx:id="zipalignCheckBox" mnemonicParsing="false" onAction="#onZipalignChecked" selected="true" text="%app.main.zipalign_checkbox_text" GridPane.rowIndex="4" />
                </children>
             </GridPane>
          </children>

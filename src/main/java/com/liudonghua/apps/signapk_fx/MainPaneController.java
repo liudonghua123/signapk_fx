@@ -13,7 +13,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -34,7 +33,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import com.android.signapk.SignApk;
 import com.liudonghua.apps.signapk_fx.CustomDialogController.DialogResult;
@@ -52,6 +50,8 @@ public class MainPaneController extends Stage  implements Initializable{
     private CheckBox customOutputDirCheckBox;
     @FXML
     private TextField outputDirTextField;
+    @FXML
+    private CheckBox zipalignCheckBox;
 	@FXML
     private ProgressBar statusProgressBar;
     @FXML
@@ -88,7 +88,7 @@ public class MainPaneController extends Stage  implements Initializable{
 		setTitle(i18nBundle.getString("app.title"));
 		getIcons().add(new Image("file:resources/images/art-icon-32.png"));
 		setWidth(400);
-		setHeight(275);
+		setHeight(300);
 		setResizable(false);
 		initModality(Modality.WINDOW_MODAL);
 		initOwner(mainApp.getPrimaryStage());
@@ -256,9 +256,14 @@ public class MainPaneController extends Stage  implements Initializable{
 	}
 
     @FXML
+	void onZipalignChecked(ActionEvent event) {
+		
+	}
+
+    @FXML
     void onSignFileClicked(ActionEvent event) {
     	// check if the file is signed already
-    	outputFilePath = outputDirPath + "/" + getSignedFileName(inputFilePath);
+    	outputFilePath = outputDirPath + File.separator + getSignedFileName(inputFilePath);
 		if(new File(outputFilePath).exists()) {
 			boolean isContinue = showFileMayProcessedConfirmDialog();
 			if(!isContinue) {
@@ -268,6 +273,31 @@ public class MainPaneController extends Stage  implements Initializable{
 		updateBottomStatus(STATUS.SIGNING);
     	new Thread(() -> {
     		boolean isSuccess = SignApk.signApk(false, certInfo.getPublicKeyFilePath(), certInfo.getPrivateKeyFilePath(), inputFilePath, outputFilePath);
+			if (zipalignCheckBox.isSelected()) {
+				String zipalignFilePath = outputDirPath + File.separator + getZipAlignFileName(outputFilePath);
+				String zipalignExecutablePath = getZipAlignExecutablePath();
+				ProcessBuilder pb = new ProcessBuilder(zipalignExecutablePath,
+						"-f", "4" , outputFilePath, zipalignFilePath);
+				try {
+					Process p = pb.start();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+//				List<String> commands = new ArrayList<String>();
+//				commands.add(zipalignExecutablePath);
+//				commands.add("-f");
+//				commands.add("4");
+//				commands.add(outputFilePath);
+//				commands.add(zipalignFilePath);
+//				// execute the command
+//			    SystemCommandExecutor commandExecutor = new SystemCommandExecutor(commands);
+//			    int result = -1;
+//				try {
+//					result = commandExecutor.executeCommand();
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+			}
     		Platform.runLater(() -> {
     			if(isSuccess) {
     	    		updateBottomStatus(STATUS.SIGN_SUCCESS);
@@ -278,6 +308,15 @@ public class MainPaneController extends Stage  implements Initializable{
     		});
     	}).start();
     }
+
+	private String getZipAlignExecutablePath() {
+		for(String pathDir : System.getenv("PATH").split(File.pathSeparator)) {
+	        if(new File(pathDir, "zipalign").exists() || new File(pathDir, "zipalign.exe").exists()) {
+	        	return "zipalign";
+	        }
+	    }
+		return mainApp.getRootDirectory() + File.separator + "resources/bin/zipalign";
+	}
 
 	private boolean showFileMayProcessedConfirmDialog() {
 		boolean isProceed = true;
@@ -377,7 +416,14 @@ public class MainPaneController extends Stage  implements Initializable{
     	}
     	statusLabel.setText(STATUS_LABEL_TEXT[ordinal]);
     }
-    
+
+	private String getZipAlignFileName(String filePath) {
+    	File file = new File(filePath);
+		String dir = file.getParent();
+		String fileName = file.getName();
+		int lastDotPosition = fileName.lastIndexOf(".");
+		return fileName.substring(0, lastDotPosition) + "_zipaligned" + fileName.substring(lastDotPosition);
+	}
 
     private String getSignedFileName(String inputFilePath) {
     	File file = new File(inputFilePath);

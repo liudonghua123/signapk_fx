@@ -212,7 +212,7 @@ public class MainApp extends Application {
 	    prefs.put("cert", cert);
 	}
 
-	private String getRootDirectory() {
+	public String getRootDirectory() {
 		String executingRootPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
 		String executingDirPath = new File(executingRootPath).getParent();
 		return executingDirPath;
