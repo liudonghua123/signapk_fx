@@ -17,7 +17,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.8</jdk.version>
 		<junit.version>4.12 </junit.version>
-		<org.controlsfx.controlsfx.version>8.20.8</org.controlsfx.controlsfx.version>
 	</properties>
 
 	<dependencies>
@@ -26,11 +25,6 @@
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.controlsfx</groupId>
-			<artifactId>controlsfx</artifactId>
-			<version>${org.controlsfx.controlsfx.version}</version>
 		</dependency>
 	</dependencies>
 

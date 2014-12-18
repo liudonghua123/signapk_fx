@@ -6,7 +6,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Locale;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
@@ -14,12 +13,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -31,12 +28,16 @@ import javafx.scene.image.Image;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import com.android.signapk.SignApk;
+import com.liudonghua.apps.signapk_fx.CustomDialogController.DialogResult;
 
 
 public class MainPaneController extends Stage  implements Initializable{
@@ -269,13 +270,12 @@ public class MainPaneController extends Stage  implements Initializable{
 
 	private boolean showFileMayProcessedConfirmDialog() {
 		boolean isProceed = true;
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle(i18nBundle.getString("app.dialog.file_exist_confirm.title"));
-		alert.setHeaderText(i18nBundle.getString("app.dialog.file_exist_confirm.header_text"));
-		alert.setContentText(i18nBundle.getString("app.dialog.file_exist_confirm.content_text"));
-
-		Optional<ButtonType> result = alert.showAndWait();
-		isProceed = (result.get() == ButtonType.OK);
+		CustomDialogController dialog = new CustomDialogController(i18nBundle.getString("app.dialog.file_exist_confirm.title"),
+				i18nBundle.getString("app.dialog.file_exist_confirm.header_text"), 
+				i18nBundle.getString("app.dialog.file_exist_confirm.content_text"), 
+				mainApp.getPrimaryStage());
+		dialog.showAndWait();
+		isProceed = dialog.getResult().equals(DialogResult.OK);
 		return isProceed;
 	}
 
@@ -312,12 +312,23 @@ public class MainPaneController extends Stage  implements Initializable{
 
 	@FXML
     void onAbout(ActionEvent event) {
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.setTitle(i18nBundle.getString("app.dialog.about.title"));
-		alert.setHeaderText(null);
-		alert.setContentText(i18nBundle.getString("app.dialog.about.content_text"));
-
-		alert.showAndWait();
+		Stage dialog = new Stage();
+		dialog.initStyle(StageStyle.UTILITY);
+		dialog.setTitle(i18nBundle.getString("app.dialog.about.title"));
+		Text content = new Text(i18nBundle.getString("app.dialog.about.content_text"));
+		double margin = 25;
+		AnchorPane.setTopAnchor(content, margin);
+		AnchorPane.setRightAnchor(content, margin);
+		AnchorPane.setBottomAnchor(content, margin);
+		AnchorPane.setRightAnchor(content, margin);
+		AnchorPane rootPane = new AnchorPane(content);
+		Scene scene = new Scene(rootPane);
+		dialog.setWidth(300);
+		dialog.setHeight(150);
+		dialog.getIcons().add(new Image("file:resources/images/art-icon-32.png"));
+		dialog.setScene(scene);
+		dialog.setResizable(false);
+		dialog.show();
     }
     
     enum STATUS {
