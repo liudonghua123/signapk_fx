@@ -7,15 +7,12 @@ This is a simple cross-platform small app for sign apk, jar or zip file. You can
 ### Features ###
 
 - optional configure output directory
-- drag and drop support
+- drag and drop support(drag intput and output)
+- zipalign support
 - support runtime language switch
 - support runtime theme switch
 
 ### some snapshot ###
-The startup main window
+The main window
 
 ![MainWindow](raw/main_window_preview.png)
-
-The signing process
-
-![MainWindow](raw/main_window_signing_preview.png)
