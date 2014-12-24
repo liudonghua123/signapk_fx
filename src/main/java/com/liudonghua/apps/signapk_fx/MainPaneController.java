@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -28,8 +29,10 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -154,6 +157,24 @@ public class MainPaneController extends Stage  implements Initializable{
 			certMenuItem.setOnAction(event -> onChangeCert(event));
 		}
 	}
+	
+	@FXML
+	void onDragDetected(MouseEvent event) {
+		if(outputFilePath != null) {
+			Dragboard db = outputDirTextField.startDragAndDrop(TransferMode.ANY);
+			ClipboardContent content = new ClipboardContent();
+			Vector<File> files = new Vector<File>();
+			files.add(new File(outputFilePath));
+			content.putFiles(files);
+			db.setContent(content);
+		}
+		event.consume();
+	}
+
+	@FXML
+	void onDragDone(DragEvent event) {
+		event.consume();
+	}
 
     @FXML
     void onDragDropped(DragEvent event) {
@@ -184,8 +205,10 @@ public class MainPaneController extends Stage  implements Initializable{
 
     @FXML
     void onDragOver(DragEvent event) {
-		event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-		event.consume();
+    	if(event.getGestureSource() == null || !event.getGestureSource().equals(outputDirTextField)) {
+    		event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+    		event.consume();
+    	}
     }
 
     @FXML
@@ -274,8 +297,8 @@ public class MainPaneController extends Stage  implements Initializable{
 		updateBottomStatus(STATUS.SIGNING);
     	new Thread(() -> {
     		boolean isSuccess = SignApk.signApk(false, certInfo.getPublicKeyFilePath(), certInfo.getPrivateKeyFilePath(), inputFilePath, outputFilePath);
+    		String zipalignFilePath = outputDirPath + File.separator + getZipAlignFileName(outputFilePath);
 			if (zipalignCheckBox.isSelected()) {
-				String zipalignFilePath = outputDirPath + File.separator + getZipAlignFileName(outputFilePath);
 				String zipalignExecutablePath = getZipAlignExecutablePath();
 				ProcessBuilder pb = new ProcessBuilder(zipalignExecutablePath,
 						"-f", "4" , outputFilePath, zipalignFilePath);
@@ -302,6 +325,7 @@ public class MainPaneController extends Stage  implements Initializable{
     		Platform.runLater(() -> {
     			if(isSuccess) {
     	    		updateBottomStatus(STATUS.SIGN_SUCCESS);
+    	    		outputFilePath = zipalignFilePath;
     			}
     			else {
     	    		updateBottomStatus(STATUS.SIGN_FAILED);
